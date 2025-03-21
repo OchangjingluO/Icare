@@ -74,8 +74,8 @@ object_stat<-stat_miss_processed(object_stat,
 ```
 
 #### 1.3 异常值处理
-**异常值检测**
-使用 `stat_detect_and_mark_outliers` 函数检测数据中的异常值，并对其进行标记。
+**异常值检测**<br>
+使用 `stat_detect_and_mark_outliers` 函数检测数据中的异常值，并对其进行标记。<br>
 如果输入是 Stat 对象，函数将异常值信息存储在`outlier.marked`槽中
 ``` r
 # 检测并标记异常值
@@ -148,14 +148,14 @@ plot_numeric_descriptive 函数用于对数值型变量进行可视化展示，�
 object_stat <- plot_numeric_descriptive(object_stat)
 ```
 #### 1.6 数据类型转换与独热编码
-**数据类型转换**
+**数据类型转换**<br>
 `stat_convert_variables `函数用于将数据中的变量转换为正确的数据类型。例如，将字符型变量转换为因子型，或将数值型变量保留为数值型。
 
 ``` r
 # 将变量转换为正确的数据类型
 object_stat <- stat_convert_variables(object_stat)
 ```
-**独热编码**
+**独热编码**<br>
  `stat_onehot_encode`函数用于对分类变量进行独热编码（One-Hot Encoding），将其转换为二进制向量形式
 ``` r
 # 对分类变量进行独热编码
@@ -174,7 +174,7 @@ object_stat <- stat_normalize_process(object_stat, normalize_method = "log_trans
 object_stat <- stat_normalize_process(object_stat, normalize_method = "min_max_scale")
 ```
 #### 1.8 相关性分析与交叉变量分析
-**相关性分析**
+**相关性分析**<br>
 - 检测高度相关特征：根据指定的相关性阈值（correlation_threshold）默认为 0.95，高于该阈值的特征对将被视为高度相关。<br>
 ​生成相关性热图：可视化特征之间的相关性矩阵，支持自定义调色板。<br>
 `data_type`数据类型，可选 "clean" 或 "scale"，默认为 "scale"<br>
@@ -183,7 +183,7 @@ object_stat <- stat_normalize_process(object_stat, normalize_method = "min_max_s
 # 检测高度相关特征并生成相关性热图
 object_stat <- stat_correlated_features(object_stat, data_type="scale,correlation_threshold = 0.95)
 ```
-**相关性热图（Top N 特征）**
+**相关性热图（Top N 特征）** <br>
 `cor_top_correlations `函数用于生成相关性热图，展示前 N 个最相关的特征。
 
 ``` r
@@ -191,7 +191,7 @@ object_stat <- stat_correlated_features(object_stat, data_type="scale,correlatio
 # 生成前 15 个最相关特征的相关性热图
 object_stat <- cor_top_correlations(object_stat,top_n = 15)
 ```
-**交叉变量分析**
+**交叉变量分析** <br>
 `cross_plot_analysis` 函数用于对两个变量进行交叉分析，生成散点图并计算相关性。
 ``` r
 # 对两个变量（如cl和cr）进行交叉分析
@@ -199,8 +199,8 @@ cross_plot_analysis(object_stat, vars = c("cl", "cr"))
 ```
 #### 1.9 差异分析与可视化
 `stat_var_feature` 函数用于对数据进行差异分析，识别在不同组别之间显著变化的特征。<br>
-注意本功能只在group_col存在的情况下进行使用
-如果输入是 Stat 对象，函数会自动更新对象的 var.result 槽位，存储差异分析结果。
+注意本功能只在group_col存在的情况下进行使用<br>
+如果输入是 Stat 对象，函数会自动更新对象的 var.result 槽位，存储差异分析结果。<br>
 - Wilcoxon 检验：使用 Wilcoxon 秩和检验比较两组之间的差异。
 ​- 多重检验校正：对 p 值进行 Bonferroni 校正，控制假阳性率。
 - ​差异特征筛选：根据 logFC 和 p 值筛选显著变化的特征。
@@ -220,19 +220,19 @@ object_stat <- stat_var_feature(object_stat, data_type = "scale")
 #6         Fibrinogen 31503.0 9.891832e-05 4.241808e+00
 
 ```
-**火山图可视化**
+**火山图可视化** <br>
 `VarFeature_volcano`函数用于生成火山图，展示差异分析结果。
 ``` r
 # 生成火山图
 object_stat <- VarFeature_volcano(object_stat)
 ```
-**小提琴图可视化**
+**小提琴图可视化** <br>
 `VarFeature_violinplot` 函数用于生成小提琴图，展示显著变化特征的分布。
 ``` r
 # 生成小提琴图
 object_stat <- VarFeature_violinplot(object_stat)
 ```
-**ROC 曲线图可视化**
+**ROC 曲线图可视化** <br>
 `VarFeature_ROC` 函数用于生成 ROC 曲线图，评估显著变化特征的分类性能。
 ``` r
 # 生成 ROC 曲线图
