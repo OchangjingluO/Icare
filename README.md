@@ -110,31 +110,6 @@ object_stat<-stat_gaze_analysis(object_stat)
 ``` r
 object_stat <- stat_compute_descriptive(object_stat)
 
-###后续还有一些等确定数据放上结果
-#> object_stat@compute.descriptive[["Group_Counts"]
-#  0   1 
-# 200 260 
-#> object_stat@compute.descriptive[["Count_Results"]]
-#$SEX
-#Female   Male
-#    72    388 
-#$ABO
-#A  AB   B   O 
-#134  37 125 164
-#> object_stat@compute.descriptive[["Num_Results"]][["Normal"]]
-#           AGE        TT       MCV      MCHC
-#Mean 55.486957 16.651739 40.911087 30.392174
-#SD    9.485561  1.724771  4.279162  1.733919
-#> object_stat@compute.descriptive[["Num_Results"]][["Non_Normal"]]
-#                  HBcAb        HCVAg
-#AD_p_value 5.930567e-24 6.577279e-21
-#Median     6.700000e-01 3.300000e-01
-#IQR        2.100250e+00 6.000000e-02
-#> object_stat@compute.descriptive[["Normality_Test"]][["AGE"]]
-#$p_value
-#[1] 0.09958748
-#$is_normal
-#[1] TRUE
 ```
 **对分类变量可视化**
 ``` r
