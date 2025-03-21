@@ -61,7 +61,7 @@ object_stat <- stat_diagnose_variable_type(object_stat)
 ``` r
 object_stat<-state_plot_missing_data(object_stat)
 ```
-![Screenshot](https://github.com/OchangjingluO/Icare/tree/master/fig/combined_missing_data_plot.png)
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/combined_missing_data_plot.png" alt="Screenshot" width="500">
 
 对缺失值进行处理，支持以下两种方法：<br>
 - **mice**：多重插补法，适合数据缺失机制复杂的情况。<br>
@@ -83,7 +83,9 @@ object_stat<-stat_miss_processed(object_stat,
 # 检测并标记异常值
 object_stat <- stat_detect_and_mark_outliers(object_stat)
 ```
-**异常值处理**
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/boxplot_outliers_batch_60.png" alt="Screenshot" width="500">
+
+**异常值处理**<br>
 检测到异常值后，支持以下四种处理方式：
 - ​**replace**：用中位数或四分位距（IQR）范围内的值替换异常值。
 - ​**remove**：删除包含异常值的样本。
@@ -103,6 +105,7 @@ object_stat <- stat_handle_outliers(object_stat, handle_method = "replace")
 ##生成基线表格
 object_stat<-stat_gaze_analysis(object_stat)
 ```
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/gaze_analysis.png" alt="Screenshot" width="500">
 
 
 #### 1.5 描述性统计分析
@@ -112,19 +115,46 @@ object_stat<-stat_gaze_analysis(object_stat)
 ``` r
 object_stat <- stat_compute_descriptive(object_stat)
 
+#> object_stat@compute.descriptive[["Group_Counts"]]
+#  0   1 
+#  200 260 
+#> object_stat@compute.descriptive[["Count_Results"]][["ABO"]]
+#  A  AB   B   O 
+#134  37 125 164 
+#> object_stat@compute.descriptive[["Num_Results"]][["Normal"]]
+#           AGE        TT       MCV      MCHC     RDWSD       rct
+#Mean 55.486957 16.651739 40.911087 30.392174 43.834565 4.3802391
+#SD    9.485561  1.724771  4.279162  1.733919  3.160162 0.4429685
+#> object_stat@compute.descriptive[["Num_Results"]][["Non_Normal"]]
+#                 HBcAb        HCVAg PreS1antigenofHBV
+#AD_p_value 5.930567e-24 6.577279e-21      1.412496e-24
+#Median     6.700000e-01 3.300000e-01      1.700000e-01
+#IQR        2.100250e+00 6.000000e-02      3.025000e-01
+#> object_stat@compute.descriptive[["Normality_Test"]][["AGE"]]
+#$p_value
+#[1] 0.09958748
+#$is_normal
+#[1] TRUE
 ```
 **对分类变量可视化**
 ``` r
 object_stat<-plot_categorical_descriptive(object_stat)
 ```
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/SEX_plot.png" alt="Screenshot" width="500">
+
 - ​小提琴图：展示数值型变量的分布密度，适合观察数据的整体分布和集中趋势。
 - ​山脊图：按组展示数值型变量的分布密度，适合比较不同组之间的分布差异。
 plot_numeric_descriptive 函数用于对数值型变量进行可视化展示，支持两种展示形式："violin"（小提琴图）和 "ridge"（山脊图）。
 默认使用` plot_type = "violin"`
 ``` r
-object_stat <- plot_numeric_descriptive(object_stat)
+object_stat <- plot_numeric_descriptive(object_stat，plot_type = "violin")
+
+object_stat <- plot_numeric_descriptive(object_stat，plot_type = "ridge")
 ```
-#### 1.6 数据类型转换与独热编码
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/density_ridge_plot_part_50.png" alt="Screenshot" width="500">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/violin_plot_part_5_.png" alt="Screenshot" width="500">
+
+#### 1.6数据类型转换与独热编码
 **数据类型转换**<br>
 `stat_convert_variables `函数用于将数据中的变量转换为正确的数据类型。例如，将字符型变量转换为因子型，或将数值型变量保留为数值型。
 
@@ -160,6 +190,8 @@ object_stat <- stat_normalize_process(object_stat, normalize_method = "min_max_s
 # 检测高度相关特征并生成相关性热图
 object_stat <- stat_correlated_features(object_stat, data_type="scale,correlation_threshold = 0.95)
 ```
+embed src="https://github.com/OchangjingluO/Icare/blob/master/fig/correlation_heatmap.pdf" width="500" height="600">
+
 **相关性热图（Top N 特征）** <br>
 `cor_top_correlations `函数用于生成相关性热图，展示前 N 个最相关的特征。
 
