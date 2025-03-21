@@ -190,7 +190,7 @@ object_stat <- stat_normalize_process(object_stat, normalize_method = "min_max_s
 # 检测高度相关特征并生成相关性热图
 object_stat <- stat_correlated_features(object_stat, data_type="scale,correlation_threshold = 0.95)
 ```
-embed src="https://github.com/OchangjingluO/Icare/blob/master/fig/correlation_heatmap.pdf" width="500" height="600">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/correlation_heatmapcorrelation_heatmap.png" alt="Screenshot" width="500">
 
 **相关性热图（Top N 特征）** <br>
 `cor_top_correlations `函数用于生成相关性热图，展示前 N 个最相关的特征。
@@ -200,12 +200,16 @@ embed src="https://github.com/OchangjingluO/Icare/blob/master/fig/correlation_he
 # 生成前 15 个最相关特征的相关性热图
 object_stat <- cor_top_correlations(object_stat,top_n = 15)
 ```
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/top_correlations_plot.png" alt="Screenshot" width="500">
+
 **交叉变量分析** <br>
 `cross_plot_analysis` 函数用于对两个变量进行交叉分析，生成散点图并计算相关性。
 ``` r
 # 对两个变量（如cl和cr）进行交叉分析
 cross_plot_analysis(object_stat, vars = c("cl", "cr"))
 ```
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/scatter_plot_cl_vs_cr.png" alt="Screenshot" width="500">
+
 #### 1.9 差异分析与可视化
 `stat_var_feature` 函数用于对数据进行差异分析，识别在不同组别之间显著变化的特征。<br>
 注意本功能只在group_col存在的情况下进行使用<br>
@@ -216,17 +220,22 @@ cross_plot_analysis(object_stat, vars = c("cl", "cr"))
 - ​生物标志物筛选：差异分析可用于识别潜在的生物标志物。
 - ​数据探索：可视化工具（如火山图、小提琴图）可用于探索数据分布和差异。
 - 模型评估：ROC 曲线图可用于评估特征的分类性能。
-**进行差异分析**
+
+**进行差异分析**<br>
+  
 ``` r
 # 进行差异分析
 object_stat <- stat_var_feature(object_stat, data_type = "scale")
 #> object_stat@var.result[["last_test_sig"]]
-#                  id       W            p       mean_x
-#1                alb 18289.0 4.879498e-08 3.886615e+01
-#10               L_r 19655.5 7.168725e-06 2.035346e+01
-#9                L_c 20400.0 7.431591e-05 1.434423e+00
-#12               N_r 31538.5 8.916802e-05 6.961962e+01
-#6         Fibrinogen 31503.0 9.891832e-05 4.241808e+00
+#                  id       W            p       mean_x     mean_y  median_x
+#18             value 18281.0 4.734611e-08 3.886593e+01  41.240364  39.40885
+#1                alb 18289.0 4.879498e-08 3.886615e+01  41.236500  39.40000
+#10               L_r 19655.5 7.168725e-06 2.035346e+01  23.748000  19.55000
+#9                L_c 20400.0 7.431591e-05 1.434423e+00   1.622850   1.41000
+# median_y     p.adjust       sd_0       sd_1        logFC change
+#18  41.45434 8.522299e-07   3.766163   4.831949 -0.085551005 Stable
+#1   41.50000 8.783096e-07   3.772383   4.823576 -0.085407540 Stable
+#10  23.40000 1.290371e-04   7.815845   7.917520 -0.222531842 Stable        
 
 ```
 **火山图可视化** <br>
@@ -235,6 +244,8 @@ object_stat <- stat_var_feature(object_stat, data_type = "scale")
 # 生成火山图
 object_stat <- VarFeature_volcano(object_stat)
 ```
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/scatter_plot_cl_vs_cr.png" alt="Screenshot" width="500">
+
 **小提琴图可视化** <br>
 `VarFeature_violinplot` 函数用于生成小提琴图，展示显著变化特征的分布。
 ``` r
