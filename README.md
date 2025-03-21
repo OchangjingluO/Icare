@@ -110,7 +110,7 @@ object_stat<-stat_gaze_analysis(object_stat)
 ``` r
 object_stat <- stat_compute_descriptive(object_stat)
 
-
+###后续还有一些等确定数据放上结果
 #> object_stat@compute.descriptive[["Group_Counts"]
 #  0   1 
 # 200 260 
