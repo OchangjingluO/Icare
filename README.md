@@ -61,6 +61,8 @@ object_stat <- stat_diagnose_variable_type(object_stat)
 ``` r
 object_stat<-state_plot_missing_data(object_stat)
 ```
+![Screenshot](https://github.com/OchangjingluO/Icare/tree/master/fig/combined_missing_data_plot.png)
+
 对缺失值进行处理，支持以下两种方法：<br>
 - **mice**：多重插补法，适合数据缺失机制复杂的情况。<br>
 - **median_mode**：中位数/众数填补法，适合数据缺失机制简单的情况。<br>
