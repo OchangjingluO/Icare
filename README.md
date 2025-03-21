@@ -238,13 +238,21 @@ object_stat <- stat_var_feature(object_stat, data_type = "scale")
 #10  23.40000 1.290371e-04   7.815845   7.917520 -0.222531842 Stable        
 
 ```
+**雷达图可视化** <br>
+`VarFeature_radarchart` 函数用于生成雷达图，展示显著变化特征的分布。
+``` r
+# 生成雷达图
+object_var <- VarFeature_radarchart(object_var)
+```
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/radar_chart.png" alt="Screenshot" width="500">
+
 **火山图可视化** <br>
 `VarFeature_volcano`函数用于生成火山图，展示差异分析结果。
 ``` r
 # 生成火山图
 object_stat <- VarFeature_volcano(object_stat)
 ```
-<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/scatter_plot_cl_vs_cr.png" alt="Screenshot" width="500">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/volcano_plot.png" alt="Screenshot" width="500">
 
 **小提琴图可视化** <br>
 `VarFeature_violinplot` 函数用于生成小提琴图，展示显著变化特征的分布。
@@ -252,9 +260,12 @@ object_stat <- VarFeature_volcano(object_stat)
 # 生成小提琴图
 object_stat <- VarFeature_violinplot(object_stat)
 ```
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/violinplot.png" alt="Screenshot" width="500">
+
 **ROC 曲线图可视化** <br>
 `VarFeature_ROC` 函数用于生成 ROC 曲线图，评估显著变化特征的分类性能。
 ``` r
 # 生成 ROC 曲线图
 object_stat <- VarFeature_ROC(object_stat)
 ```
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/roc_plot.png" alt="Screenshot" width="500">
