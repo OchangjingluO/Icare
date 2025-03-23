@@ -61,7 +61,9 @@ object_stat <- stat_diagnose_variable_type(object_stat)
 ``` r
 object_stat<-state_plot_missing_data(object_stat)
 ```
-<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/combined_missing_data_plot.png" alt="Screenshot" width="500">
+<div align="center">
+  <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/combined_missing_data_plot.png" alt="Screenshot" width="500">
+</div>
 
 对缺失值进行处理，支持以下两种方法：<br>
 - **mice**：多重插补法，适合数据缺失机制复杂的情况。<br>
@@ -83,7 +85,9 @@ object_stat<-stat_miss_processed(object_stat,
 # 检测并标记异常值
 object_stat <- stat_detect_and_mark_outliers(object_stat)
 ```
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/boxplot_outliers_batch_60.png" alt="Screenshot" width="500">
+</div>
 
 **异常值处理**<br>
 检测到异常值后，支持以下四种处理方式：
@@ -105,8 +109,9 @@ object_stat <- stat_handle_outliers(object_stat, handle_method = "replace")
 ##生成基线表格
 object_stat<-stat_gaze_analysis(object_stat)
 ```
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/gaze_analysis.png" alt="Screenshot" width="500">
-
+</div>
 
 #### 1.5 描述性统计分析
 `stat_compute_descriptive` 函数用于计算数据的描述性统计信息，包括数值型变量的均值、中位数、标准差等，以及分类变量的频数统计。<br>
@@ -140,18 +145,23 @@ object_stat <- stat_compute_descriptive(object_stat)
 ``` r
 object_stat<-plot_categorical_descriptive(object_stat)
 ```
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/SEX_plot.png" alt="Screenshot" width="500">
+</div>
 
 - ​小提琴图：展示数值型变量的分布密度，适合观察数据的整体分布和集中趋势。
 - ​山脊图：按组展示数值型变量的分布密度，适合比较不同组之间的分布差异。
 plot_numeric_descriptive 函数用于对数值型变量进行可视化展示，支持两种展示形式："violin"（小提琴图）和 "ridge"（山脊图）。
 默认使用` plot_type = "violin"`
 ``` r
+object_stat <- plot_numeric_descriptive(object_stat，plot_type = "ridge")
+
 object_stat <- plot_numeric_descriptive(object_stat，plot_type = "violin")
 
-object_stat <- plot_numeric_descriptive(object_stat，plot_type = "ridge")
 ```
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/density_ridge_plot_part_50.png" alt="Screenshot" width="500">
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/violin_plot_part_5_.png" alt="Screenshot" width="500">
 
 #### 1.6数据类型转换与独热编码
@@ -269,3 +279,5 @@ object_stat <- VarFeature_violinplot(object_stat)
 object_stat <- VarFeature_ROC(object_stat)
 ```
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/roc_plot.png" alt="Screenshot" width="500">
+
+
