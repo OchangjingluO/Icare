@@ -280,4 +280,51 @@ object_stat <- VarFeature_ROC(object_stat)
 ```
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/roc_plot.png" alt="Screenshot" width="500">
 
+#### 1.10 保存结果 
+保存清洗后的 Stat 对象<br>
+在完成数据清洗后，清洗后的 `Stat` 对象可以保存为 .RData 文件。您可以使用`readRDS`函数加载该对象，以便在后续分析中使用。
+``` r
+###保存S4对象
+saveRDS(object_stat, file = "object_stat.RDS")
+###读取S4对象
+object_stat <-readRDS(file = "object_stat.RData")
+```
 
+### 2.疾病预测模块
+#### 2.1 数据加载与简单清洗
+在疾病预测模块中，您可以使用 `Stat` 对象或清洗后的数据来创建 `Model` 对象。<br>
+`PrepareData `函数用于对数据进行简单处理，特别是将因子变量（factor 或 character 类型）转换为二进制或哑变量（dummy variables），以便数据符合模型的输入要求。
+``` r
+# 使用 Stat 对象创建 Model 对象
+object_model <- CreateModelObject(
+  object = object_stat,  # 加载的 Stat 对象
+  group_col = "group"    # 分组列名
+)
+
+
+# 使用清洗后的数据创建 Model 对象
+model_sim <- CreateModelObject(
+  clean.data = data,  # 清洗后的数据框
+  group_col = "group" # 分组列名
+)
+
+# 使用 Model_data 对象进行数据处理
+model_sim <- PrepareData(model_sim)
+```
+
+#### 2.2 数据平衡处理
+`BalanceData`函数用于处理数据中的类别不平衡问题，支持过采样（over）、欠采样（under）或两者结合（both）的方法。默认使用 both 方法（balance_method = "both"）。<br>
+该函数根据类别不平衡情况自动选择是否进行平衡处理，并提供了可视化功能，用于展示平衡前后的类别分布。<br>
+如果类别不平衡比例低于 imbalance_threshold(默认imbalance_threshold=0.15) 或样本大小超过 sample_size_threshold（sample_size_threshold=1500），则不会进行平衡处理，除非 force_balance 为 TRUE
+如果输入是 Model_data 对象，函数会自动更新对象的clean.data槽位，存储相关性分析结果。
+
+``` r
+model_sim <- BalanceData(model_sim,
+                         imbalance_threshold = 0.15,
+                         sample_size_threshold = 1500,
+                         force_balance = FALSE,
+                         balance_method = "both")
+model_sim <- BalanceData(model_sim,
+                        force_balance = FALSE)
+
+``` 
