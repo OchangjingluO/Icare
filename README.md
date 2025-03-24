@@ -332,13 +332,13 @@ object_model <- CreateModelObject(
 
 
 # 使用清洗后的数据创建 Model 对象
-model_sim <- CreateModelObject(
+object_model <- CreateModelObject(
   clean.data = data,  # 清洗后的数据框
   group_col = "group" # 分组列名
 )
 
 # 使用 Model_data 对象进行数据处理
-model_sim <- PrepareData(model_sim)
+object_model <- PrepareData(object_model)
 ```
 
 #### 2.2 数据平衡处理
@@ -349,14 +349,14 @@ model_sim <- PrepareData(model_sim)
 
 ``` r
 # 使用 Model_data 对象进行数据平衡处理
-model_sim <- BalanceData(model_sim,
+object_model <- BalanceData(object_model,
                          imbalance_threshold = 0.15,
                          sample_size_threshold = 1500,
                          force_balance = FALSE,
                          balance_method = "both")
 
 ####采取强制平衡处理
-model_sim <- BalanceData(model_sim,
+object_model <- BalanceData(object_model,
                         force_balance = FALSE)
 
 ```
@@ -372,7 +372,7 @@ model_sim <- BalanceData(model_sim,
 
 ``` r
 # 将数据拆分为训练集和测试集
-model_sim<-SplitDatModel(model_sim,
+object_model<-SplitDatModel(object_model,
                          train_ratio = 0.7,
                          test_ratio = 0.3)
 ```
@@ -383,7 +383,7 @@ model_sim<-SplitDatModel(model_sim,
 
 ``` r
 # 对数据进行标准化处理
-model_sim<-NormalizeData(model_sim,
+object_model<-NormalizeData(object_model,
                          normalize_method = "min_max_scale")
 ```
 
@@ -401,16 +401,16 @@ SelFeatureSet 函数用于从数据集中选择最优特征子集，支持基于
 
 ``` r
 # 从数据集中选择最优特征子集
-model_sim <- SelFeatureSet(model_sim,
+object_model <- SelFeatureSet(object_model,
                            AUC_change_threshold=0.01,
                            max_feature=NULL,
                            data_type = "clean")
-#> model_sim@feature.result[["best_features_subset"]]
+#> object_model@feature.result[["best_features_subset"]]
 #[1] "HGB" "RBC" "WBC" "PLT" "MCV"
 
 # 过滤特征子集
 #也可以不经过特征筛选直接执行下面这一步
-model_sim <- FilterDataFeatures(model_sim)
+object_model <- FilterDataFeatures(object_model)
 ```
 <div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/Combined_AUC_vs_Features.png" alt="Screenshot" width="500">
@@ -433,7 +433,7 @@ model_sim <- FilterDataFeatures(model_sim)
 
 ``` r
 # 训练模型并分析性能
-model_sim<-ModelTrainAnalysis(model_sim,
+object_model<-ModelTrainAnalysis(object_model,
                               methods = c("gbm", "rf", "svmLinear", "svmRadial", "glmnet"),
                               control = list(method = "repeatedcv", number = 10, repeats = 5),
                               tune_grids = list(
@@ -446,7 +446,7 @@ model_sim<-ModelTrainAnalysis(model_sim,
                               classProbs = TRUE, 
                               verboseIter = FALSE,
                               allowParallel = TRUE)
-#> model_sim@all.results
+#> object_model@all.results
 #              Model Sensitivity Specificity Positive_predictive_value Negative_predictive_value accuracy_score Precision f1_score
 #rf               rf   1.0000000   1.0000000                 100.00000                 100.00000      100.00000 100.00000 1.980198
 #svmRadial svmRadial   0.9656357   0.9634551                  96.23288                  96.66667       96.45270  96.23288 1.912085
@@ -466,17 +466,129 @@ model_sim<-ModelTrainAnalysis(model_sim,
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/roc_curves.png" alt="Screenshot" width=800">
 </div>
 
-**提取最佳模型结果**
+**提取最佳模型结果**<br>
 `ModelBestRoc` 函数用于从 `Model_data` 对象中提取性能最佳模型，并在训练集和测试集上绘制 ROC 曲线。支持自定义性能指标（如 AUC、准确率等）作为最佳模型选择指标默认`metric="auc"`<br>
+如果输入是 Model_data 对象，函数会自动更新其 best.model.result 槽位（用于存储最佳模型及其在测试集上的性能分析结果）<br>
 
 ``` r
 # 绘制最佳模型的 ROC 曲线
-model_sim <- ModelBestRoc(model_sim,
+object_model <- ModelBestRoc(object_model,
                           metric="auc")
+#> object_model@best.model.result[["test_result"]]
+#  Model Sensitivity Specificity Positive_predictive_value Negative_predictive_value
+#1    rf   0.9116466   0.9533074                  94.97908                   91.7603
+#  accuracy_score Precision f1_score recall_score       auc
+#1       93.28063  94.97908 1.805959     91.16466 0.9869751
+
 ```
 
 <div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/best_model_roc_plot.png" alt="Screenshot" width=500">
+</div>
+
+**最佳模型混淆矩阵生成**<br>
+`ModelBestCM `函数用于从 `Model_data `对象中提取性能最佳模型，并在测试集上生成混淆矩阵及其可视化图表。
+如果输入是 Model_data 对象，函数会自动更新其 best.model.result 槽位<br>
+
+``` r
+# 生成最佳模型的混淆矩阵
+object_model <- ModelBestCM(object_model)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/confusion_matrix_plot.png" alt="Screenshot" width=500">
+</div>
+
+**特征重要性分析**<br>
+`FeatureImportance` 函数用于从 `Model_data` 对象中提取最佳模型，并计算其特征重要性。<br>
+支持自定义显示前 top_n 个重要特征默`top_n = 15`，并生成可视化图表。<br>
+如果输入是 Model_data 对象，函数会自动更新其 best.model.result 槽位<br>
+
+``` r
+# 计算特征重要性并生成可视化图表
+object_model<-FeatureImportance(object_model,
+                             top_n =4)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/Feature_Importance.png" alt="Screenshot" width=500">
+</div>
+
+**SHAP 值分析模块**<br>
+`ModelShap` 函数用于从` Model_data `对象中提取最佳模型，并生成 SHAP（SHapley Additive exPlanations）值分析的可视化图表。
+支持生成 Beeswarm 图、Force 图和 Waterfall 图<br>
+如果输入是 Model_data 对象，函数会自动更新其 shap.result 槽位<br>
+
+``` r
+# 生成 SHAP 值分析的可视化图表
+object_model <- ModelShap(object_model)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/shap_beeswarm_plot.png" alt="Screenshot" width=500">
+</div>
+
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/shap_force_plot.png" alt="Screenshot" width=500">
+</div>
+
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/shap_waterfall_plot.png" alt="Screenshot" width=500">
+</div>
+
+**添加外部验证集**
+`Extract_external_validata` 函数用于将外部验证数据集添加到 Model_data 对象中。<br>
+支持从 Stat 对象或直接提供的数据框中提取验证数据<br>
+如果输入是 Model_data 对象，函数会自动更新其filtered.set槽位存储外部验证集<br>
+
+``` r
+# 从 `Stat` 对象中提取验证数据并更新 `Model_data` 对象
+object_model <- Extract_external_validata(object_stats = object_val, object_model = object_model)
+
+# 直接提供验证数据并更新 `Model_data` 对象
+object_model <- Extract_external_validata(new_data = val_data, object_model = object_model)
+
+```
+**模型外部验证**
+`ModelValidation`函数用于对 `Model_data` 对象中的最佳模型进行外部验证。<br>
+支持在独立验证集上评估模型性能，生成 ROC 曲线<br>
+如果输入是 Model_data 对象，函数会自动更新其 best.model.result 槽位<br>
+
+``` r
+# 进行模型外部验证
+object_model <- ModelValidation(object_model)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/validation_roc_plot.png" alt="Screenshot" width=500">
+</div>
+
+#### 2.5 模型临床应用 
+
+**模型阈值选择**
+`ModelThreshold` 函数用于从 `Model_data` 对象中提取最佳模型，并在测试集上选择最佳阈值。<br>
+支持基于最大准确率、最接近 0.95 的 PPV 或 NPV 来选择阈值，并生成相应的可视化图表。<br>
+
+``` r
+# 选择最佳阈值并生成可视化图表
+object_model<-ModelThreshold(object_model,
+                          method_threshold="max_accuracy")
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/accuracy_vs_threshold_curve.png" alt="Screenshot" width=500">
+</div>
+
+**临床预测**
+`ModelClinicalPrediction`函数用于使用`Model_data`对象中的最佳模型对新临床数据进行预测。<br>
+支持基于最佳阈值生成预测结果，并可视化预测概率和分类。<br>
+可根据上述ModelThreshold得到的结果也可以自定义，这里选取通用的0.5
+
+``` r
+# 对新临床数据进行预测
+# 使用 ModelClinicalPrediction 进行预测（自动提取最佳阈值）
+Clinical_results <- ModelClinicalPrediction(object = object_model, new_data = new_data)
+
+# 使用自定义阈值进行预测
+Clinical_results <- ModelClinicalPrediction(object = object_model, new_data = new_data, best_threshold = 0.5)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/prediction_visualization.png" alt="Screenshot" width=500">
 </div>
 
 
