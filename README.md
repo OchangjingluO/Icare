@@ -418,6 +418,10 @@ model_sim <- FilterDataFeatures(model_sim)
 
 
 #### 2.5 模型训练与分析
+
+**训练模型**<br>
+
+
 `ModelTrainAnalysis` 函数用于训练多个机器学习模型，评估其性能，并生成 ROC 曲线和性能指标。支持多种模型（如 GBM、随机森林、SVM 等），并允许自定义超参数调优和交叉验证设置。<br>
 `methods`:模型名称列表，默认为 `methods=c("gbm", "rf", "svmLinear", "svmRadial", "glmnet")`<br>
 `tune_grids`:模型超参数调优网格，默认为预定义的调优网格<br>
@@ -459,7 +463,14 @@ model_sim<-ModelTrainAnalysis(model_sim,
 ```
 
 <div align="center">
-<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/roc_curves.png" alt="Screenshot" width="500">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/roc_curves.png" alt="Screenshot" width=800">
 </div>
 
+**提取最佳模型结果**
+`ModelBestRoc` 函数用于从 `Model_data` 对象中提取性能最佳模型，并在训练集和测试集上绘制 ROC 曲线。支持自定义性能指标（如 AUC、准确率等）作为最佳模型选择指标默认`metric="auc"`<br>
 
+``` r
+# 绘制最佳模型的 ROC 曲线
+model_sim <- ModelBestRoc(model_sim,
+                          metric="auc")
+```
