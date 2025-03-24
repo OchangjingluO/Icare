@@ -474,3 +474,9 @@ model_sim<-ModelTrainAnalysis(model_sim,
 model_sim <- ModelBestRoc(model_sim,
                           metric="auc")
 ```
+
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/best_model_roc_plot.png" alt="Screenshot" width=500">
+</div>
+
+
