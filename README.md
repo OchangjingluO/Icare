@@ -90,6 +90,8 @@ object_stat <- stat_detect_and_mark_outliers(object_stat)
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/boxplot_outliers_batch_60.png" alt="Screenshot" width="500">
 </div>
 
+
+
 **异常值处理**<br>
 检测到异常值后，支持以下四种处理方式：
 - ​**replace**：用中位数或四分位距（IQR）范围内的值替换异常值。
@@ -113,6 +115,7 @@ object_stat<-stat_gaze_analysis(object_stat)
 <div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/gaze_analysis.png" alt="Screenshot" width="500">
 </div>
+
 
 #### 1.5 描述性统计分析
 `stat_compute_descriptive` 函数用于计算数据的描述性统计信息，包括数值型变量的均值、中位数、标准差等，以及分类变量的频数统计。<br>
@@ -150,6 +153,7 @@ object_stat<-plot_categorical_descriptive(object_stat)
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/SEX_plot.png" alt="Screenshot" width="500">
 </div>
 
+
 - ​小提琴图：展示数值型变量的分布密度，适合观察数据的整体分布和集中趋势。
 - ​山脊图：按组展示数值型变量的分布密度，适合比较不同组之间的分布差异。
 plot_numeric_descriptive 函数用于对数值型变量进行可视化展示，支持两种展示形式："violin"（小提琴图）和 "ridge"（山脊图）。
@@ -162,8 +166,12 @@ object_stat <- plot_numeric_descriptive(object_stat，plot_type = "violin")
 ```
 <div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/density_ridge_plot_part_50.png" alt="Screenshot" width="500">
+</div>
+
 <div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/violin_plot_part_5_.png" alt="Screenshot" width="500">
+</div>
+
 
 #### 1.6数据类型转换与独热编码
 **数据类型转换**<br>
@@ -201,7 +209,10 @@ object_stat <- stat_normalize_process(object_stat, normalize_method = "min_max_s
 # 检测高度相关特征并生成相关性热图
 object_stat <- stat_correlated_features(object_stat, data_type="scale,correlation_threshold = 0.95)
 ```
+
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/correlation_heatmapcorrelation_heatmap.png" alt="Screenshot" width="500">
+</div>
 
 **相关性热图（Top N 特征）** <br>
 `cor_top_correlations `函数用于生成相关性热图，展示前 N 个最相关的特征。
@@ -211,7 +222,9 @@ object_stat <- stat_correlated_features(object_stat, data_type="scale,correlatio
 # 生成前 15 个最相关特征的相关性热图
 object_stat <- cor_top_correlations(object_stat,top_n = 15)
 ```
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/top_correlations_plot.png" alt="Screenshot" width="500">
+</div>
 
 **交叉变量分析** <br>
 `cross_plot_analysis` 函数用于对两个变量进行交叉分析，生成散点图并计算相关性。
@@ -219,7 +232,10 @@ object_stat <- cor_top_correlations(object_stat,top_n = 15)
 # 对两个变量（如cl和cr）进行交叉分析
 cross_plot_analysis(object_stat, vars = c("cl", "cr"))
 ```
+
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/scatter_plot_cl_vs_cr.png" alt="Screenshot" width="500">
+</div>
 
 #### 1.9 差异分析与可视化
 `stat_var_feature` 函数用于对数据进行差异分析，识别在不同组别之间显著变化的特征。<br>
@@ -255,7 +271,9 @@ object_stat <- stat_var_feature(object_stat, data_type = "scale")
 # 生成雷达图
 object_var <- VarFeature_radarchart(object_var)
 ```
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/radar_chart.png" alt="Screenshot" width="500">
+</div>
 
 **火山图可视化** <br>
 `VarFeature_volcano`函数用于生成火山图，展示差异分析结果。
@@ -263,7 +281,11 @@ object_var <- VarFeature_radarchart(object_var)
 # 生成火山图
 object_stat <- VarFeature_volcano(object_stat)
 ```
+
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/volcano_plot.png" alt="Screenshot" width="500">
+</div>
+
 
 **小提琴图可视化** <br>
 `VarFeature_violinplot` 函数用于生成小提琴图，展示显著变化特征的分布。
@@ -271,7 +293,10 @@ object_stat <- VarFeature_volcano(object_stat)
 # 生成小提琴图
 object_stat <- VarFeature_violinplot(object_stat)
 ```
+
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/violinplot.png" alt="Screenshot" width="500">
+</div>
 
 **ROC 曲线图可视化** <br>
 `VarFeature_ROC` 函数用于生成 ROC 曲线图，评估显著变化特征的分类性能。
@@ -279,7 +304,10 @@ object_stat <- VarFeature_violinplot(object_stat)
 # 生成 ROC 曲线图
 object_stat <- VarFeature_ROC(object_stat)
 ```
+<div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/roc_plot.png" alt="Screenshot" width="500">
+</div>
+
 
 #### 1.10 保存结果 
 保存清洗后的 Stat 对象<br>
@@ -314,18 +342,124 @@ model_sim <- PrepareData(model_sim)
 ```
 
 #### 2.2 数据平衡处理
-`BalanceData`函数用于处理数据中的类别不平衡问题，支持过采样（over）、欠采样（under）或两者结合（both）的方法。默认使用 both 方法（balance_method = "both"）。<br>
+`BalanceData`函数用于处理数据中的类别不平衡问题，支持过采样（over）、欠采样（under）或两者结合（both）的方法。默认使用 both 方法`balance_method = "both"`。<br>
 该函数根据类别不平衡情况自动选择是否进行平衡处理，并提供了可视化功能，用于展示平衡前后的类别分布。<br>
-如果类别不平衡比例低于 imbalance_threshold(默认imbalance_threshold=0.15) 或样本大小超过 sample_size_threshold（sample_size_threshold=1500），则不会进行平衡处理，除非 force_balance 为 TRUE
-如果输入是 Model_data 对象，函数会自动更新对象的clean.data槽位，存储相关性分析结果。
+如果类别不平衡比例低于 默认`imbalance_threshold=0.15` 或样本大小超过 默认`sample_size_threshold=1500`，则不会进行平衡处理，除非`force_balance=TRUE`<br>
+如果输入是 `Model_data` 对象，函数会自动更新对象的`clean.data`槽位，存储相关性分析结果。
 
 ``` r
+# 使用 Model_data 对象进行数据平衡处理
 model_sim <- BalanceData(model_sim,
                          imbalance_threshold = 0.15,
                          sample_size_threshold = 1500,
                          force_balance = FALSE,
                          balance_method = "both")
+
+####采取强制平衡处理
 model_sim <- BalanceData(model_sim,
                         force_balance = FALSE)
 
-``` 
+```
+
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/class_distribution_balance.png" alt="Screenshot" width="500">
+</div>
+
+#### 2.2 数据集划分
+`SplitDatModel`函数用于将数据按比例拆分为训练集和测试集。基于分组列（group_col）进行分层拆分，以确保训练集和测试集中的类别分布一致。<br>
+默认训练集`train_ratio=0.7`测试集`test_ratio=0.3`<br>
+如果输入是 `Model_data 对象`，函数会自动更新对象的`split.data`槽位，存储数据划分结果。<br>
+
+``` r
+# 将数据拆分为训练集和测试集
+model_sim<-SplitDatModel(model_sim,
+                         train_ratio = 0.7,
+                         test_ratio = 0.3)
+```
+
+#### 2.3 数据标准化
+`NormalizeData` 函数对数据进行标准化处理，并将标准化方法应用于测试集。支持多种标准化方法，如对数变换、最小-最大缩放、Z 分数标准化等默认`normalize_method = "min_max_scale"`<br>
+如果输入是 `Model_data 对象`，函数会自动更新对象的`split.sacle.data`槽位，存储数据标准化处理结果。<br>
+
+``` r
+# 对数据进行标准化处理
+model_sim<-NormalizeData(model_sim,
+                         normalize_method = "min_max_scale")
+```
+
+#### 2.4 特征筛选与特征子集过滤
+SelFeatureSet 函数用于从数据集中选择最优特征子集，支持基于以下方法的特征选择：
+- 信息值（IV）​：评估特征与目标变量之间的关联强度。<br>
+- ​最大信息系数（MIC）​：衡量特征与目标变量之间的非线性关系。<br>
+- ​互信息（MI）​：量化特征与目标变量之间的信息共享程度。<br>
+
+该函数通过计算不同特征数量下的 AUC（Area Under Curve）值，选择最优特征子集，并可视化 AUC 随特征数量的变化趋势。<br>
+`AUC_change_threshold `是用于判断特征选择过程中 AUC（Area Under Curve）值变化的阈值。当增加特征数量时，如果 AUC 的提升幅度小于该阈值，则认为继续增加特征数量对模型性能的提升不再显著，从而停止特征选择。默认值`AUC_change_threshold=0.01`，即 AUC 变化小于 1% 时，选择当前特征数量为最优。`max_feature`为筛选得到最大特征子集数量，默认`max_feature=NULL`，即使用所有特征。data_type用于指定进行特征筛选的数据类型，可选值为 "clean"（清洗后的数据）或 "scale"（标准化后的数据）默认`data_type = "clean"`<br>
+如果输入是 Model_data 对象，函数会自动更新其 `feature.selection` 槽位（用于存储特征选择分析的结果）和 `feature.result` 槽位（用于存储筛选得到的最优特征子集），并返回更新后的对象。<br>
+
+`FilterDataFeatures` 函数用于根据特征选择结果或直接使用完整数据集，过滤训练集和测试集，保留最优特征子集或全部特征。该函数支持从清洗后或标准化后的数据中进行过滤，并更新 `Model_data` 对象的 `filtered.set` 槽位。
+
+``` r
+# 从数据集中选择最优特征子集
+model_sim <- SelFeatureSet(model_sim,
+                           AUC_change_threshold=0.01,
+                           max_feature=NULL,
+                           data_type = "clean")
+#> model_sim@feature.result[["best_features_subset"]]
+#[1] "HGB" "RBC" "WBC" "PLT" "MCV"
+
+# 过滤特征子集
+#也可以不经过特征筛选直接执行下面这一步
+model_sim <- FilterDataFeatures(model_sim)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/Combined_AUC_vs_Features.png" alt="Screenshot" width="500">
+</div>
+
+
+#### 2.5 模型训练与分析
+`ModelTrainAnalysis` 函数用于训练多个机器学习模型，评估其性能，并生成 ROC 曲线和性能指标。支持多种模型（如 GBM、随机森林、SVM 等），并允许自定义超参数调优和交叉验证设置。<br>
+`methods`:模型名称列表，默认为 `methods=c("gbm", "rf", "svmLinear", "svmRadial", "glmnet")`<br>
+`tune_grids`:模型超参数调优网格，默认为预定义的调优网格<br>
+`classProbs`：是否计算类别概率，默认为 TRUE。<br>
+`verboseIter`：是否显示训练过程的详细信息，默认为 FALSE。<br>
+`allowParallel`：是否启用并行计算，默认为 TRUE。<br>
+如果输入是 Model_data 对象，函数会自动更新其 all.results 槽位（用于存储所有模型在训练集上的性能分析结果）和 train.models 槽位（用于存储训练完成的所有模型），并返回更新后的对象。<br>
+
+
+``` r
+# 训练模型并分析性能
+model_sim<-ModelTrainAnalysis(model_sim,
+                              methods = c("gbm", "rf", "svmLinear", "svmRadial", "glmnet"),
+                              control = list(method = "repeatedcv", number = 10, repeats = 5),
+                              tune_grids = list(
+                                gbm = expand.grid(n.trees = c(100, 150), interaction.depth = c(3, 5), shrinkage = c(0.01, 0.1), n.minobsinnode = c(5, 10)),
+                                rf = expand.grid(mtry = c(1,5)),
+                                svmLinear = expand.grid(C = c(0.1, 1, 10)),
+                                svmRadial = expand.grid(sigma = c(0.1, 0.5, 1), C = c(0.1, 1, 10)),
+                                glmnet = expand.grid(alpha = c(0.1, 0.5, 1), lambda = c(0.01, 0.1, 1))
+                              ),
+                              classProbs = TRUE, 
+                              verboseIter = FALSE,
+                              allowParallel = TRUE)
+#> model_sim@all.results
+#              Model Sensitivity Specificity Positive_predictive_value Negative_predictive_value accuracy_score Precision f1_score
+#rf               rf   1.0000000   1.0000000                 100.00000                 100.00000      100.00000 100.00000 1.980198
+#svmRadial svmRadial   0.9656357   0.9634551                  96.23288                  96.66667       96.45270  96.23288 1.912085
+#gbm             gbm   0.9312715   0.9584718                  95.59083                  93.51702       94.51014  95.59083 1.844573
+#svmLinear svmLinear   0.7336770   0.7142857                  71.28548                  73.50427       72.38176  71.28548 1.452406
+#glmnet       glmnet   0.7336770   0.6993355                  70.23026                  73.09028       71.62162  70.23026 1.452183
+#          recall_score       auc
+#rf           100.00000 1.0000000
+#svmRadial     96.56357 0.9929702
+#gbm           93.12715 0.9866111
+#svmLinear     73.36770 0.7990547
+#glmnet        73.36770 0.7967228
+
+```
+
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/roc_curves.png" alt="Screenshot" width="500">
+</div>
+
+
