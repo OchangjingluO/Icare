@@ -56,7 +56,8 @@ object_stat <- stat_diagnose_variable_type(object_stat)
 ```
 
 #### 1.2 缺失值处理
-变量缺失值的分布 <br>
+**变量缺失值的分布**<br>
+
 如果输入是 Stat 对象，函数将缺失值信息存储在`processe.info`槽中
 ``` r
 object_stat<-state_plot_missing_data(object_stat)
@@ -69,6 +70,7 @@ object_stat<-state_plot_missing_data(object_stat)
 对缺失值进行处理，支持以下两种方法：<br>
 - **mice**：多重插补法，适合数据缺失机制复杂的情况。<br>
 - **median_mode**：中位数/众数填补法，适合数据缺失机制简单的情况。<br>
+
 默认使用 mice 方法（impute_method = "mice"）。<br>
 如果样本或特征的缺失值比例超过 20%（miss_threshold = 20），则自动删除该样本或特征。<br>
 如果输入是 Stat 对象，清洗后的数据将在`clean.data`槽中更新
