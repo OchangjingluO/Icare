@@ -82,7 +82,7 @@ object_stat<-stat_miss_processed(object_stat,
 
 #### 1.3 异常值处理
 **异常值检测**<br>
-使用 `stat_detect_and_mark_outliers` 函数检测数据中的异常值，并对其进行标记。<br>
+使用 `stat_detect_and_mark_outliers` 函数检测数据中的异常值，并对其进行标记并可视化。<br>
 如果输入是 Stat 对象，函数将异常值信息存储在`outlier.marked`槽中
 ``` r
 # 检测并标记异常值
@@ -102,6 +102,7 @@ object_stat <- stat_detect_and_mark_outliers(object_stat)
 - ​**capping**：将异常值限制在指定范围内（如 IQR 的上下限）
 
 默认使用`handle_method = "replace"`
+如果输入是 Stat 对象，函数将清洗后的数据存储在`outlier.marked`槽中，并且对`clean.data`进行更新
 ``` r
 # 处理异常值
 object_stat <- stat_handle_outliers(object_stat, handle_method = "replace")
@@ -109,10 +110,19 @@ object_stat <- stat_handle_outliers(object_stat, handle_method = "replace")
 ```
 
 #### 1.4 生成基线表
-如果输入是 Stat 对象，函数将基线表信息存储在`baseline.table`槽中
+您可以通过`gaze_method`参数选择组间均值比较的统计方法,默认`gaze_method=3`
+- 1 forces analysis as normal-distributed
+- 2 forces analysis as continuous non-normal
+- 3 performs a Shapiro-Wilk test or nortest::ad.test to decide between normal or non-normal <br>
+
+允许用户自定义公式 `formula` 或基于 `group_cols` 自动生成分析公式。<br>
+分析结果可按 `digits`指定的小数位数进行四舍五入，并可选择是否显示 p 值 (show.p = TRUE/FALSE)。<br>
+如果输入是 `Stat` 对象，函数将基线表信息存储在`baseline.table`槽中<br>
 ``` r
 ##生成基线表格
-object_stat<-stat_gaze_analysis(object_stat)
+object_stat<-stat_gaze_analysis(object_stat,
+                                show.p = TRUE,
+                                gaze_method = 3)
 ```
 <div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/gaze_analysis.png" alt="Screenshot" width="500">
@@ -120,6 +130,8 @@ object_stat<-stat_gaze_analysis(object_stat)
 
 
 #### 1.5 描述性统计分析
+
+**统计分析**
 `stat_compute_descriptive` 函数用于计算数据的描述性统计信息，包括数值型变量的均值、中位数、标准差等，以及分类变量的频数统计。<br>
 此外，它还会对数值型变量进行正态性检验，并根据检验结果分别计算正态和非正态变量的统计量。<br>
 如果输入是 Stat 对象，函数将统计结果存储在`compute.descriptive`槽中
@@ -155,7 +167,7 @@ object_stat<-plot_categorical_descriptive(object_stat)
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/SEX_plot.png" alt="Screenshot" width="500">
 </div>
 
-
+**对数值型变量可视化**
 - ​小提琴图：展示数值型变量的分布密度，适合观察数据的整体分布和集中趋势。
 - ​山脊图：按组展示数值型变量的分布密度，适合比较不同组之间的分布差异。
 plot_numeric_descriptive 函数用于对数值型变量进行可视化展示，支持两种展示形式："violin"（小提琴图）和 "ridge"（山脊图）。
@@ -203,13 +215,22 @@ object_stat <- stat_normalize_process(object_stat, normalize_method = "min_max_s
 ```
 #### 1.8 相关性分析与交叉变量分析
 **相关性分析**<br>
-- 检测高度相关特征：根据指定的相关性阈值（correlation_threshold）默认为 0.95，高于该阈值的特征对将被视为高度相关。<br>
+`stat_correlated_features`函数用于计算数据集中变量之间的相关性矩阵，记录高相关变量对，按相关性值降序排序，并输出前 5 组最高相关的变量对。
+检测高度相关特征：根据指定的相关性阈值（correlation_threshold）默认为 0.95，高于该阈值的特征对将被视为高度相关。<br>
 ​生成相关性热图：可视化特征之间的相关性矩阵，支持自定义调色板。<br>
 `data_type`数据类型，可选 "clean" 或 "scale"，默认为 "scale"<br>
 如果输入是 Stat 对象，函数会自动更新对象的 corr.result槽位，存储相关性分析结果。
 ``` r
 # 检测高度相关特征并生成相关性热图
 object_stat <- stat_correlated_features(object_stat, data_type="scale,correlation_threshold = 0.95)
+
+#> object_stat@corr.result[["top5_pairs"]]
+#         drop_feature        corr_feature corr_value
+#4           pre_RET_r Ret_mid_F_Intensity  0.9961969
+#5 Ret_mid_F_Intensity           pre_RET_r  0.9961969
+#3                 MCV                  hb  0.9624690
+#6                  hb                 MCV  0.9624690
+#1                  PT                 INR  0.9579065
 ```
 
 <div align="center">
@@ -254,17 +275,21 @@ cross_plot_analysis(object_stat, vars = c("cl", "cr"))
   
 ``` r
 # 进行差异分析
-object_stat <- stat_var_feature(object_stat, data_type = "scale")
+object_stat <- stat_var_feature(object_stat, data_type = "clean")
 #> object_stat@var.result[["last_test_sig"]]
-#                  id       W            p       mean_x     mean_y  median_x
-#18             value 18281.0 4.734611e-08 3.886593e+01  41.240364  39.40885
-#1                alb 18289.0 4.879498e-08 3.886615e+01  41.236500  39.40000
-#10               L_r 19655.5 7.168725e-06 2.035346e+01  23.748000  19.55000
-#9                L_c 20400.0 7.431591e-05 1.434423e+00   1.622850   1.41000
-# median_y     p.adjust       sd_0       sd_1        logFC change
-#18  41.45434 8.522299e-07   3.766163   4.831949 -0.085551005 Stable
-#1   41.50000 8.783096e-07   3.772383   4.823576 -0.085407540 Stable
-#10  23.40000 1.290371e-04   7.815845   7.917520 -0.222531842 Stable        
+> object_stat@var.result[["last_test_sig"]]
+#                  id       W            p       mean_x     mean_y median_x median_y
+#2                alp 48762.0 2.318873e-58 1.382423e+02  76.820000  129.000   74.000
+#14               PLT 46322.5 7.060287e-47 3.243819e+02 175.544000  310.500  159.600
+#1                alb 18289.0 4.879498e-08 3.886615e+01  41.236500   39.400   41.500
+#11               L_r 19655.5 7.168725e-06 2.035346e+01  23.748000   19.550   23.400
+#10               L_c 20400.0 7.431591e-05 1.434423e+00   1.622850    1.410    1.505
+#       p.adjust       sd_0       sd_1        logFC change
+#2  4.405858e-57   22.88034   38.45866  0.847645337     Up
+#14 1.341455e-45   71.13009  106.62522  0.885860738     Up
+#1  9.271046e-07   3.772383   4.823576 -0.085407540 Stable
+#11 1.362058e-04   7.815845   7.917520 -0.222531842 Stable
+#10 1.412002e-03  0.4801972  0.4426622 -0.178059054 Stable  
 
 ```
 **雷达图可视化** <br>
@@ -344,7 +369,7 @@ object_model <- PrepareData(object_model)
 ```
 
 #### 2.2 数据平衡处理
-`BalanceData`函数用于处理数据中的类别不平衡问题，支持过采样（over）、欠采样（under）或两者结合（both）的方法。默认使用 both 方法`balance_method = "both"`。<br>
+`BalanceData`函数用于处理数据中的类别不平衡问题，支持过采样（over）、欠采样（under）或两者结合（both）的方法。默认使用 both 方法`method = "both"`。<br>
 该函数根据类别不平衡情况自动选择是否进行平衡处理，并提供了可视化功能，用于展示平衡前后的类别分布。<br>
 如果类别不平衡比例低于 默认`imbalance_threshold=0.15` 或样本大小超过 默认`sample_size_threshold=1500`，则不会进行平衡处理，除非`force_balance=TRUE`<br>
 如果输入是 `Model_data` 对象，函数会自动更新对象的`clean.data`槽位，存储相关性分析结果。
@@ -355,11 +380,11 @@ object_model <- BalanceData(object_model,
                          imbalance_threshold = 0.15,
                          sample_size_threshold = 1500,
                          force_balance = FALSE,
-                         balance_method = "both")
+                         method = "both")
 
 ####采取强制平衡处理
 object_model <- BalanceData(object_model,
-                        force_balance = FALSE)
+                        force_balance =T)
 
 ```
 
@@ -411,7 +436,7 @@ object_model <- SelFeatureSet(object_model,
 #[1] "HGB" "RBC" "WBC" "PLT" "MCV"
 
 # 过滤特征子集
-#也可以不经过特征筛选直接执行下面这一步
+#也可以不经过特征筛选直接执行下面这一步,对数据进行过滤
 object_model <- FilterDataFeatures(object_model)
 ```
 <div align="center">
@@ -436,31 +461,48 @@ object_model <- FilterDataFeatures(object_model)
 ``` r
 # 训练模型并分析性能
 object_model<-ModelTrainAnalysis(object_model,
-                              methods = c("gbm", "rf", "svmLinear", "svmRadial", "glmnet"),
-                              control = list(method = "repeatedcv", number = 10, repeats = 5),
-                              tune_grids = list(
-                                gbm = expand.grid(n.trees = c(100, 150), interaction.depth = c(3, 5), shrinkage = c(0.01, 0.1), n.minobsinnode = c(5, 10)),
-                                rf = expand.grid(mtry = c(1,5)),
-                                svmLinear = expand.grid(C = c(0.1, 1, 10)),
-                                svmRadial = expand.grid(sigma = c(0.1, 0.5, 1), C = c(0.1, 1, 10)),
-                                glmnet = expand.grid(alpha = c(0.1, 0.5, 1), lambda = c(0.01, 0.1, 1))
-                              ),
-                              classProbs = TRUE, 
-                              verboseIter = FALSE,
-                              allowParallel = TRUE)
+                                 methods = c("gbm", "rf", "svmLinear", "svmRadial", "glmnet"),
+                                 control = list(method = "repeatedcv", number = 10, 
+                                                repeats = 5),
+                                 tune_grids = list(
+                                   gbm = expand.grid(
+                                     n.trees = c(50, 100),
+                                     interaction.depth = c(2, 3),
+                                     shrinkage = c(0.001, 0.01),
+                                     n.minobsinnode = c(10, 20)
+                                   ),
+                                   rf = expand.grid(
+                                     mtry = c(2, 3, 4, 5)
+                                   ),
+                                   svmLinear = expand.grid(
+                                     C = c(0.01, 0.1, 1)
+                                   ),
+                                   svmRadial = expand.grid(
+                                     sigma = c(0.01, 0.05, 0.1),
+                                     C = c(0.1, 1)
+                                   ),
+                                   glmnet = expand.grid(
+                                     alpha = c(0.1, 0.5, 0.9),
+                                     lambda = 10^seq(-4, -1, 1)
+                                   )
+                                 ),
+                                 classProbs = TRUE, 
+                                 verboseIter = FALSE,
+                                 allowParallel = TRUE)
+
 #> object_model@all.results
-#              Model Sensitivity Specificity Positive_predictive_value Negative_predictive_value accuracy_score Precision f1_score
-#rf               rf   1.0000000   1.0000000                 100.00000                 100.00000      100.00000 100.00000 1.980198
-#svmRadial svmRadial   0.9656357   0.9634551                  96.23288                  96.66667       96.45270  96.23288 1.912085
-#gbm             gbm   0.9312715   0.9584718                  95.59083                  93.51702       94.51014  95.59083 1.844573
-#svmLinear svmLinear   0.7336770   0.7142857                  71.28548                  73.50427       72.38176  71.28548 1.452406
-#glmnet       glmnet   0.7336770   0.6993355                  70.23026                  73.09028       71.62162  70.23026 1.452183
-#          recall_score       auc
-#rf           100.00000 1.0000000
-#svmRadial     96.56357 0.9929702
-#gbm           93.12715 0.9866111
-#svmLinear     73.36770 0.7990547
-#glmnet        73.36770 0.7967228
+#              Model Sensitivity Specificity Positive_predictive_value
+#rf               rf   1.0000000   1.0000000                 100.00000
+#svmRadial svmRadial   0.9863946   0.9942857                  99.31507
+#svmLinear svmLinear   0.9795918   0.9714286                  96.64430
+#glmnet       glmnet   0.9659864   0.9714286                  96.59864
+#gbm             gbm   0.8843537   0.9542857                  94.20290
+#          Negative_predictive_value accuracy_score Precision f1_score recall_score       auc
+#rf                        100.00000      100.00000 100.00000 1.980198    100.00000 1.0000000
+#svmRadial                  98.86364       99.06832  99.31507 1.953388     98.63946 0.9987949
+#svmLinear                  98.26590       97.51553  96.64430 1.939525     97.95918 0.9919534
+#glmnet                     97.14286       96.89441  96.59864 1.912844     96.59864 0.9913314
+#gbm                        90.76087       92.23602  94.20290 1.752258     88.43537 0.9860447
 
 ```
 
@@ -477,10 +519,10 @@ object_model<-ModelTrainAnalysis(object_model,
 object_model <- ModelBestRoc(object_model,
                           metric="auc")
 #> object_model@best.model.result[["test_result"]]
-#  Model Sensitivity Specificity Positive_predictive_value Negative_predictive_value
-#1    rf   0.9116466   0.9533074                  94.97908                   91.7603
-#  accuracy_score Precision f1_score recall_score       auc
-#1       93.28063  94.97908 1.805959     91.16466 0.9869751
+#  Model Sensitivity Specificity Positive_predictive_value Negative_predictive_value accuracy_score
+#1    rf   0.9056604   0.9529412                  92.30769                  94.18605       93.47826
+#  Precision f1_score recall_score       auc
+#1  92.30769 1.793722     90.56604 0.9610433
 
 ```
 
@@ -508,7 +550,7 @@ object_model <- ModelBestCM(object_model)
 ``` r
 # 计算特征重要性并生成可视化图表
 object_model<-FeatureImportance(object_model,
-                             top_n =4)
+                             top_n =15)
 ```
 <div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/Feature_Importance.png" alt="Screenshot" width=500">
@@ -545,7 +587,7 @@ object_model <- ModelShap(object_model)
 object_model <- Extract_external_validata(object_stats = object_val, object_model = object_model)
 
 # 直接提供验证数据并更新 `Model_data` 对象
-object_model <- Extract_external_validata(new_data = val_data, object_model = object_model)
+object_model <- Extract_external_validata(data = val_data, object_model = object_model)
 
 ```
 **模型外部验证**
@@ -566,6 +608,8 @@ object_model <- ModelValidation(object_model)
 **模型阈值选择**
 `ModelThreshold` 函数用于从 `Model_data` 对象中提取最佳模型，并在测试集上选择最佳阈值。<br>
 支持基于最大准确率、最接近 0.95 的 PPV 或 NPV 来选择阈值，并生成相应的可视化图表。<br>
+如果输入是 Model_data 对象，函数会自动更新其best.model.result槽位存储最优阈值<br>
+
 
 ``` r
 # 选择最佳阈值并生成可视化图表
@@ -579,7 +623,7 @@ object_model<-ModelThreshold(object_model,
 **临床预测**
 `ModelClinicalPrediction`函数用于使用`Model_data`对象中的最佳模型对新临床数据进行预测。<br>
 支持基于最佳阈值生成预测结果，并可视化预测概率和分类。<br>
-可根据上述ModelThreshold得到的结果也可以自定义，这里选取通用的0.5
+可根据上述函数`ModelThreshold`得到的结果也可以自定义，这里选取通用的0.5
 
 ``` r
 # 对新临床数据进行预测
@@ -592,5 +636,130 @@ Clinical_results <- ModelClinicalPrediction(object = object_model, new_data = ne
 <div align="center">
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/prediction_visualization.png" alt="Screenshot" width=500">
 </div>
+
+### 3.亚型分型模块
+#### 3.1 数据加载
+在亚型分型模块中，您可以使用 可选的现有对象(Stat/Subtyping/PrognosiX/Model_data)或清洗后的数据来创建 `Subtyping` 对象。<br>
+
+``` r
+# 使用 Stat 对象创建 Subtyping 对象
+object_sub <- CreateSubtypingObject(object=object_stat)
+
+# 使用 PrognosiX 对象创建 Subtyping 对象
+object_sub <- CreateSubtypingObject(object=object_pn)
+
+# 使用 Model_data 对象创建 Subtyping 对象
+object_sub <- CreateSubtypingObject(object=object_model)
+
+# 使用清洗后的数据创建 Subtyping 对象
+object_sub <- CreateSubtypingObject(data=clean_data)
+```
+
+#### 3.2 数据标准化
+`Sub_normalize_process` 函数对数据进行标准化处理。支持多种标准化方法，如对数变换、最小-最大缩放、Z 分数标准化等默认`normalize_method = "min_max_scale"`<br>
+如果输入是 `Subtyping 对象`，函数会自动更新对象的`scale.data`槽位，存储数据标准化处理结果。<br>
+
+``` r
+# 对数据进行标准化处理
+object_sub<-Sub_normalize_process(object_sub,
+                              normalize_method ="min_max_scale")
+```
+
+#### 3.3分型分析-基于非负矩阵分解(NMF)
+
+**NMF分解与初步分析**
+`Sub_nmf_estimate`函数用于执行非负矩阵分解(NMF)分析。该函数通过对输入数据进行NMF分解，能够有效识别数据中的潜在模式，并自动生成以下关键可视化结果：<br>
+1.NMF拟合评估图 - 展示不同rank值下的模型拟合优度<br>
+2.共识矩阵图 - 直观呈现样本聚类稳定性<br>
+在使用时需注意以下参数设置：<br>
+`rank_range`参数控制测试的聚类数目范围，默认`rank_range = 2:4`，范围扩大虽能探索更多可能性但会显著增加计算时间 <br>
+`nrun`参数决定每个rank值的重复计算次数，适当增加可提高结果稳定性，但需权衡计算成本 <br>
+默认采用`method = "brunet"`分解算法，该方法是NMF的标准实现，在多数数据集上表现稳健 <br>
+如果输入是 `Subtyping 对象`，函数会自动更新对象的`cluster.results`槽位，在`nmf.result`中存储nmf初步分析的结果<br>
+
+``` r
+object_sub<-Sub_nmf_estimate(object_sub,
+                                  rank_range = 2:4,
+                                  nrun = 10,
+                                  method = "brunet")
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/consensus_map.png" alt="Screenshot" width=500">
+</div>
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/nmf_plot.png" alt="Screenshot" width=500">
+</div>
+
+**最优秩选择**
+`Sub_best_rank_analysis`函数通过计算cophenetic相关系数自动确定最优rank值，并使用该最优rank重新运行NMF分解生成基矩阵热图，同时将最佳rank值返回。<br>
+如果输入是 `Subtyping 对象`，函数会自动更新对象的`cluster.results`槽位，在`nmf.result`中存储最优秩的结果，`Optimal.cluster`更新最佳亚组数量<br>
+
+``` r
+object_sub<-Sub_best_rank_analysis(object_sub,
+                                  nrun = 10,
+                                  method = "brunet")
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/basismap_plot.png" alt="Screenshot" width=500">
+</div>
+
+**样本分组**
+`Sub_assign_groups`函数用于根据最优秩的NMF分解结果将样本分配到不同的亚型组
+如果输入是 `Subtyping 对象`，函数会自动更新对象的`clustered.data`槽位，保存分组后数据<br>
+
+``` r
+object_sub<-Sub_assign_groups(object_sub)
+```
+**可视化**
+提供t-SNE和UMAP两种降维可视化方法，用于直观展示NMF聚类结果。
+如果输入是 `Subtyping 对象`，函数会自动更新对象的`visualization.results`槽位，保存分组后数据<br>
+
+``` r
+# 完整可视化流程
+object_sub <- Sub_tsne_analyse(object_sub)  # t-SNE计算
+object_sub <- Sub_plot_tsne(object_sub)      # t-SNE绘图
+
+object_sub <- Sub_umap_analyse(object_sub)  # UMAP计算
+object_sub <- Sub_plot_umap(object_sub)      # UMAP绘图
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/tsne_clustering_plot-1.png" alt="Screenshot" width=500">
+</div>
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/umap_clustering_plot-1.png" alt="Screenshot" width=500">
+</div>
+
+#### 3.4分型分析-K-means聚类
+
+**K-means聚类分析**
+`Sub_kmeans_with_optimal_k`函数能基于轮廓系数法自动确定最佳聚类数(K值)并执行稳健的K-means聚类分析(nstart=25)，同时支持结果可视化。
+如果输入是 `Subtyping 对象`，函数会自动更新对象的`cluster.results`槽位，存储完整的聚类分析结果，
+`Optimal.cluster`记录确定的最佳亚组数量，并且更新槽位`clustered.data`保存带有分组标签的分析数据
+
+``` r
+object_sub<-Sub_kmeans_with_optimal_k(object_sub)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/silhouette_plot.png" alt="Screenshot" width=500">
+</div>
+
+**可视化**
+与nmf分析流程相似K-means聚类分析也可以用t-SNE和UMAP两种降维可视化方法，用于直观展示K-means聚类结果。
+如果输入是 `Subtyping 对象`，函数会自动更新对象的`visualization.results`槽位，保存分组后数据<br>
+
+``` r
+# 完整可视化流程
+object_sub <- Sub_tsne_analyse(object_sub)  # t-SNE计算
+object_sub <- Sub_plot_tsne(object_sub)      # t-SNE绘图
+object_sub <- Sub_umap_analyse(object_sub)  # UMAP计算
+object_sub <- Sub_plot_umap(object_sub)      # UMAP绘图
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/tsne_clustering_plot.png" alt="Screenshot" width=500">
+</div>
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/umap_clustering_plot.png" alt="Screenshot" width=500">
+</div>
+
 
 
