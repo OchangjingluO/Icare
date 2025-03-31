@@ -761,5 +761,281 @@ object_sub <- Sub_plot_umap(object_sub)      # UMAP绘图
 <img src="https://github.com/OchangjingluO/Icare/blob/master/fig/umap_clustering_plot.png" alt="Screenshot" width=500">
 </div>
 
+### 4.预后建模与生存分析模块
+#### 4.1 数据加载
+在预后建模与生存分析模块中，您可以使用可选的现有对象(Stat/Subtyping/PrognosiX)或清洗后的数据来创建 `PrognosiX` 对象。<br>
+​默认列名设置：当用户未明确指定时，默认使用生存时间列`time_col = "time"`,生存状态列`status_col = "status"`<br>
+并自我转化机制无论输入数据中原始列名为何，在对象创建过程中，系统会自动将指定的时间/状态列重命名为标准名称`"time"`以及`"status"`
+
+``` r
+# 使用 Stat 对象创建 Subtyping 对象
+object_pn<-CreatePrognosiXObject(object=object_stat,
+                             time_col ="time",
+                             status_col = "event")
+
+# 使用 PrognosiX 对象创建 Subtyping 对象
+object_pn <- CreatePrognosiXObject(object=object_pn,
+                             time_col ="time",
+                             status_col = "event")
+
+# 使用清洗后的数据创建 Subtyping 对象
+object_sub <- CreatePrognosiXObject(data=clean_data,
+                             time_col ="time",
+                             status_col = "event")
+
+```
+
+#### 4.2 变量分箱
+`perform_subgroup_analysis`函数是将连续变量转换为分类变量，便于后续的亚组生存分析。
+该函数提供两种最优分割方法:
+- ROC曲线法：基于二元状态变量的最佳区分点
+- MaxStat法：基于生存时间的最优分割点
+
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`sub.data`槽位，保存分箱后的数据。
+
+``` r
+object_pn<-perform_subgroup_analysis(object_pn,
+                                     methods = "roc")
+```
+
+#### 4.3 生成基线表
+`Prognos_gaze_analysis` 用于生成临床基线特征表的函数，通过`use_subgroup_data`参数可灵活选择使用原始数据或分箱后的亚组数据进行计算，并支持通过`response_var`参数指定分组变量（如治疗方案、生存状态等）进行组间差异比较，最终生成规范化基线特征表。
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`baseline.table`槽位，保存基线信息。
+
+``` r
+object_pn <- Prognos_gaze_analysis(
+  object_pn,
+  use_subgroup_data =T,
+  response_var = "group")
+```
+
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/gaze_analysis-pn.png" alt="Screenshot" width=500">
+</div>
+
+#### 4.4  数据简单清洗
+`PrepareDataForPrognosiX` 函数数据类型简单转化符合后续分析
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`sub.data`和`survival.data`槽位,保存清洗后的数据
+``` r
+object_pn <- Prognos_gaze_analysis(object_pn)
+```
+
+#### 4.5  单变量回归分析
+
+**单变量Cox回归分析**
+`Prognos_cox_univariate_analysis`函数能够执行单变量Cox比例风险回归分析，评估各特征与生存结局的独立关联性。
+该函数支持两种数据输入方式：可直接分析PrognosiX对象中的生存数据（survival.data）或亚组分析数据（sub.data）由参数use_subgroup_data调节 。
+用户也可指定待分析的变量列表（selected_vars）
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的univariate.analysis槽位保存单因素分析结果
+``` r
+##单因素分析
+object_pn<-Prognos_cox_univariate_analysis(object_pn,
+                                               selected_vars =NULL)
+#> object_pn@univariate.analysis[["all_univariate_results"]][["significant_results"]]
+#            Variable        HR  CI_lower  CI_upper      P_value          HR_95CI         se
+#4  PreS1antigenofHBV 0.7811950 0.6723037 0.9077232 1.263983e-03 0.78 (0.67-0.91) 0.07658912
+#5               TPAb 0.7963130 0.6953908 0.9118820 9.874696e-04   0.8 (0.7-0.91) 0.06914200
+#11               INR 1.1475945 1.0144955 1.2981556 2.861338e-02  1.15 (1.01-1.3) 0.06289619
+#13                TT 1.1406791 1.0073308 1.2916799 3.797581e-02 1.14 (1.01-1.29) 0.06342846
+#14        Fibrinogen 1.2766036 1.1294602 1.4429167 9.292968e-05 1.28 (1.13-1.44) 0.06248131
+#15               FDP 1.2231168 1.0976850 1.3628816 2.639883e-04  1.22 (1.1-1.36) 0.05520354
+```
+
+
+**森林图**
+`forest_plot_univariate_analysis`函数能够将单变量Cox回归结果以森林图形式直观呈现。
+通过`result_type`参数可选择展示"all"（全部结果）或"significant"（仅p<0.05的显著结果）。
+
+``` r
+###森林图绘制
+object_pn<-forest_plot_univariate_analysis(object_pn,
+                                        result_type = "significant")
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/forest_plot.png" alt="Screenshot" width=500">
+</div>
+
+**生存分析**
+`plot_var_kaplan_meier`函数能够根据指定分组变量生成Kaplan-Meier生存曲线及风险表。`var_col`参数指定分组变量。
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的univariate.analysis槽位
+``` r
+var_col="group"
+time_col = "time"
+status_col = "status"
+object_object_pn<-plot_var_kaplan_meier(object_pn, var_col = "group")
+
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/survival_time_distribution_by_group.png" alt="Screenshot" width=500">
+</div>
+
+**生存时间差异**
+`plot_var_survival_time`函数用于比较不同分类变量间的生存时间分布特征。通过`var_col`参数指定分组变量
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的univariate.analysis槽位
+
+``` r
+object_pn<-plot_var_survival_time(object_pn,
+                               var_col = "group")
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/survival_distribution_by_group.png" alt="Screenshot" width=500">
+</div>
+
+**非线性回归分析**
+`Pron_univariate_regression`函数用于非线性关联分析，通过限制性立方样条(RCS)方法精确建模连续变量与临床结局的复杂关系。
+基于AIC准则选择最优节点数`knots`构建RCS模型，支持三种回归模型类型`method = c("linear", "logistic", "cox")`默认采用"Cox"模型
+`y_label`参数用于指定结局变量（如生存状态），当选择Cox模型时还需通过`time_col`参数设置生存时间变量，而`x_label`参数则用于指定要分析的主要自变量（如"age"或"tumor_size"等连续变量）。在模型构建方面，knots参数（默认值3，建议范围3-5）控制RCS曲线的灵活度，节点数越多曲线拟合越复杂；adjust_vars参数允许用户输入需要调整的混杂因素变量名（如c("age","gender")），以控制潜在混杂效应；prob参数（默认0.1）则用于设置剂量反应曲线的参考百分位点，通常取第10百分位数作为参考基准。
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的univariate.analysis槽位。
+``` r
+object_pn<-Pron_univariate_regression(object_pn,
+                                      method = "cox",
+                                      x_label = "cl",
+                                      knots = 3,  
+                                      adjust_vars = NULL,  
+                                      prob = 0.1)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/fig.cox_lshapall.png" alt="Screenshot" width=500">
+</div>
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/fig.cox_nshapall.png" alt="Screenshot" width=500">
+</div>
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/fig.cox_proball.png" alt="Screenshot" width=500">
+</div>
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/fig.cox_ushapall.png" alt="Screenshot" width=500">
+</div>
+
+**时间依赖性ROC分析**
+`plot_var_roc_plot`函数用时间依赖性ROC曲线分析,用于评估生物标志物或临床变量在不同时间点的预测效能。通过`var_col`参数指定分组变量
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的univariate.analysis槽位
+
+``` r
+object_pn <- plot_var_roc_plot(object_pn, var_col = "cl")
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/time_dependent_roc_by_cl.png" alt="Screenshot" width=500">
+</div>
+
+#### 4.6 数据集划分
+`SplitDataPrognosiX`函数用于数据分割，能够将数据集智能划分为训练集和测试集，
+该函数通过`train_ratio`和`test_ratio`参数（默认采用7:3比例），通过`unwanted_var`参数设置去除指定变量
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的split.data槽位,保存划分后的数据集
+``` r
+###自动排除名为"group"的列
+object_pn<-SplitDataPrognosiX(object_pn,
+                           unwanted_var ="group",
+                           train_ratio = 0.7,
+                           test_ratio = 0.3)
+```
+
+#### 4.7 特征筛选
+
+`run_lasso_feature_selection`函数通过LASSO回归（最小绝对收缩和选择算子）自动筛选与生存结局最相关的预测变量。
+该模块首先使用交叉验证确定最优正则化参数lambda（`lambda.1se`标准），然后基于此筛选非零系数变量，最终生成两个专业可视化结果：
+1) 交叉验证曲线图（`lasso_cv_visualization`）展示不同lambda值下的模型误差，标注最优lambda位置；
+2) 特征重要性图（`lasso_feature_importance`）以系数大小排序显示各变量的贡献度。
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`feature.result`槽位保存特征筛选过程
+``` r
+###执行LASSO特征选择分析
+object_pn <- run_lasso_feature_selection(object_pn)
+#object_pn@feature.result[["important_vars"]]
+#[1] "TT"  "PLT" "PCT" "rct" "alp" "k"   "tp" 
+
+### LASSO交叉验证可视化
+object_pn <- lasso_cv_visualization(object_pn)
+
+### LASSO特征重要性可视化
+object_pn <- lasso_feature_importance(object_pn)
+```
+
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/lasso_path_visualization.png" alt="Screenshot" width=500">
+</div>
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/lasso_feature_importance.png" alt="Screenshot" width=500">
+</div>
+
+#### 4.7 特征过滤
+`Prognos_filter_features`函数根据分析结果过滤特征子集数据
+`use_filtered_features`默认（use_filtered_features=T）由于本次LASSO分析筛选得到的显著特征数量较少，为保留更全面的预后信息，本次分析将不应用特征筛选结果，而继续使用原始特征集进行分析。
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`filtered.set`槽位。
+``` r
+###保留所有原始特征（不应用LASSO筛选结果）
+object_pn <- Prognos_filter_features(object_pn, use_filtered_features=FALSE)
+```
+
+#### 4.8预后模型构建
+
+**多模型预后分析**
+`train_all_models`是预后分析集成建模函数，支持7种主流预后模型的训练与评估：Ridge回归、Lasso回归、偏最小二乘(PLS)、CoxBoost、Cox比例风险模型(CoxPH)、超级主成分分析(SuperPC)和随机生存森林(RSF)。
+该模块通过`model_list = c("ridge", "lasso", "pls", "coxboost", "coxph", "superpc", "rsf")`参数灵活控制需要训练的模型类型
+执行完整的分析流程：1)模型训练→2)ROC曲线评估→3)生存分析验证→4)风险比计算→5)森林图可视化
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型分析结果
+``` r
+###提取训练集和测试集
+data_sets <- pn_filtered_set(object_pn)
+train_data <- data_sets$training
+test_data <- data_sets$testing
+###预后模型分析
+object_pn <- train_all_models(object_pn)
+```
+
+**Ridge回归预后模型**
+`train_ridge_model`函数实现了完整的Ridge回归预后模型分析流程，通过L2正则化处理高维临床数据中的共线性问题。
+首先使用10折交叉验证确定最优正则化参数lambda（lambda.min），构建Cox比例风险Ridge回归模型，并生成交叉验证误差曲线。
+模型性能评估包括：
+1) ROC曲线分析（evaluate_roc_ridge_model）计算训练集和测试集的AUC值与C-index；
+2) 生存分析验证（evaluate_km_ridge_model）基于风险评分中位数划分高低风险组，输出Kaplan-Meier曲线和风险比(HR)
+3) 风险比计算（ridge_compute_hr_and_ci）提供各变量的HR及95%置信区间；
+4) 森林图可视化（forest_plot_ridge_model）展示各预测因子的效应大小。
+
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型ridge_model分析结果
+``` r
+###训练Ridge回归预后模型
+object_pn<-train_ridge_model(object_pn,
+                             nfolds = 10)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/cv_ridge_plot.png" alt="Screenshot" width=500">
+</div>
+
+``` r
+###计算训练集和测试集的AUC和C-index并生成ROC曲线图
+object_pn <- evaluate_roc_ridge_model(object_pn)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/ROC_curves-ridge.png" alt="Screenshot" width=500">
+</div>
+
+``` r
+###执行Kaplan-Meier生存分析验证
+###基于风险评分中位数划分高低风险组
+###计算HR及95%CI，生成生存曲线图
+object_pn <- evaluate_km_ridge_model(object_pn)
+```
+
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/ridge_km_test.png" alt="Screenshot" width=500">
+</div>
+
+``` r
+###计算各变量的风险比(HR)及置信区间
+object_pn <- ridge_compute_hr_and_ci(object_pn)
+
+###生成森林图
+object_pn <- forest_plot_ridge_model(object_pn)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/forest_plot-ridge.png" alt="Screenshot" width=500">
+</div>
+
+
+
+
+`extract_model_results`函数则基于指定指标`metric = "C_index"/"ROC_AUC"`选择最优模型
+
+
 
 
