@@ -992,55 +992,73 @@ object_pn <- train_all_models(object_pn,
 
 ```
 
-**Ridge回归预后模型**
-用户可以根据自己的需求，灵活选择7种模型训练和评估，而不是强制使用固定的流程。这样能更清晰地控制分析过程，并选择最适合自己数据的模型
-`train_ridge_model`函数实现了完整的Ridge回归预后模型分析流程，通过L2正则化处理高维临床数据中的共线性问题。
-首先使用10折交叉验证确定最优正则化参数lambda（lambda.min），构建Cox比例风险Ridge回归模型，并生成交叉验证误差曲线。
+**coxph回归预后模型**
+支持自动交叉验证的Cox比例风险模型训练功能，通过分层抽样评估模型性能(C-index指标)，支持数据预处理核函数和可视化分析
 模型性能评估包括：
-1) ROC曲线分析（evaluate_roc_ridge_model）计算训练集和测试集的AUC值与C-index；
-2) 生存分析验证（evaluate_km_ridge_model）基于风险评分中位数划分高低风险组，输出Kaplan-Meier曲线和风险比(HR)
-3) 风险比计算（ridge_compute_hr_and_ci）提供各变量的HR及95%置信区间；
-4) 森林图可视化（forest_plot_ridge_model）展示各预测因子的效应大小。
-
-如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型ridge_model分析结果
+1) ROC曲线分析（evaluate_roc_coxph_model）计算训练集和测试集的AUC值与C-index；
+2) 生存分析验证（evaluate_km_coxph_model）基于风险评分中位数划分高低风险组，输出Kaplan-Meier曲线和风险比(HR)
+3) 风险比计算（coxph_compute_hr_and_ci）提供各变量的HR及95%置信区间；
+4) 森林图可视化（forest_plot_coxph_model）展示各预测因子的效应大小。
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型coxph_model分析结果
 ``` r
-###训练Ridge回归预后模型
-object_pn<-train_ridge_model(object_pn,
+###训练coxph回归预后模型
+object_pn<-train_coxph_model(object_pn,
                              nfolds = 10)
 ```
 <div align="center">
-<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/cv_ridge_plot.png" alt="Screenshot" width=500">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/cv_coxph_plot.png" alt="Screenshot" width=500">
 </div>
 
 ``` r
 ###计算训练集和测试集的AUC和C-index并生成ROC曲线图
-object_pn <- evaluate_roc_ridge_model(object_pn)
+object_pn <- evaluate_roc_coxph_model(object_pn)
 ```
 <div align="center">
-<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/ROC_curves-ridge.png" alt="Screenshot" width=500">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/ROC_curves-coxph.png" alt="Screenshot" width=500">
 </div>
 
 ``` r
 ###执行Kaplan-Meier生存分析验证
 ###基于风险评分中位数划分高低风险组
 ###计算HR及95%CI，生成生存曲线图
-object_pn <- evaluate_km_ridge_model(object_pn)
+object_pn <- evaluate_km_coxph_model(object_pn)
 ```
 
 <div align="center">
-<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/ridge_km_test.png" alt="Screenshot" width=500">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/coxph_time_distribution_test.png" alt="Screenshot" width=500">
 </div>
 
 ``` r
 ###计算各变量的风险比(HR)及置信区间
-object_pn <- ridge_compute_hr_and_ci(object_pn)
+object_pn <- coxph_compute_hr_and_ci(object_pn)
 
+###生成森林图
+object_pn <- forest_plot_coxph_model(object_pn)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/forest_plot-coxph.png" alt="Screenshot" width=500">
+</div>
+
+
+**Ridge回归预后模型**
+用户可以根据自己的需求，灵活选择7种模型训练和评估，而不是强制使用固定的流程。这样能更清晰地控制分析过程，并选择最适合自己数据的模型
+`train_ridge_model`函数实现了完整的Ridge回归预后模型分析流程，通过L2正则化处理高维临床数据中的共线性问题。
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型ridge_model分析结果
+``` r
+###训练Ridge回归预后模型
+object_pn<-train_ridge_model(object_pn,
+                             nfolds = 10)
+###计算训练集和测试集的AUC和C-index并生成ROC曲线图
+object_pn <- evaluate_roc_ridge_model(object_pn)
+###执行Kaplan-Meier生存分析验证
+###基于风险评分中位数划分高低风险组
+###计算HR及95%CI，生成生存曲线图
+object_pn <- evaluate_km_ridge_model(object_pn)
+###计算各变量的风险比(HR)及置信区间
+object_pn <- ridge_compute_hr_and_ci(object_pn)
 ###生成森林图
 object_pn <- forest_plot_ridge_model(object_pn)
 ```
-<div align="center">
-<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/forest_plot-ridge.png" alt="Screenshot" width=500">
-</div>
 
 
 **LASSO回归预后模型**
