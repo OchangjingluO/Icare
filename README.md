@@ -971,18 +971,29 @@ object_pn <- Prognos_filter_features(object_pn, use_filtered_features=FALSE)
 **多模型预后分析**
 `train_all_models`是预后分析集成建模函数，支持7种主流预后模型的训练与评估：Ridge回归、Lasso回归、偏最小二乘(PLS)、CoxBoost、Cox比例风险模型(CoxPH)、超级主成分分析(SuperPC)和随机生存森林(RSF)。
 该模块通过`model_list = c("ridge", "lasso", "pls", "coxboost", "coxph", "superpc", "rsf")`参数灵活控制需要训练的模型类型
-执行完整的分析流程：1)模型训练→2)ROC曲线评估→3)生存分析验证→4)风险比计算→5)森林图可视化
+执行完整的分析流程：
+✅ ​自动训练与交叉验证
+✅ ​ROC曲线与C-index评估
+✅ ​Kaplan-Meier生存分析
+✅ ​风险比（HR）计算
+✅ 森林图可视化
+
 如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型分析结果
+
+**快速开始**
 ``` r
 ###提取训练集和测试集
 data_sets <- pn_filtered_set(object_pn)
 train_data <- data_sets$training
 test_data <- data_sets$testing
 ###预后模型分析
-object_pn <- train_all_models(object_pn)
+object_pn <- train_all_models(object_pn,
+                               model_list = c("ridge", "lasso", "pls", "coxboost", "coxph", "superpc", "rsf"))
+
 ```
 
 **Ridge回归预后模型**
+用户可以根据自己的需求，灵活选择7种模型训练和评估，而不是强制使用固定的流程。这样能更清晰地控制分析过程，并选择最适合自己数据的模型
 `train_ridge_model`函数实现了完整的Ridge回归预后模型分析流程，通过L2正则化处理高维临床数据中的共线性问题。
 首先使用10折交叉验证确定最优正则化参数lambda（lambda.min），构建Cox比例风险Ridge回归模型，并生成交叉验证误差曲线。
 模型性能评估包括：
@@ -1032,10 +1043,180 @@ object_pn <- forest_plot_ridge_model(object_pn)
 </div>
 
 
+**LASSO回归预后模型**
+实现了完整的LASSO回归预后分析流程，通过L1正则化处理高维临床数据中的特征选择问题
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型lasso_model分析结果
+``` r
+###训练Lasso回归预后模型
+object_pn <- train_lasso_model(object_pn, nfolds = 10)
+###计算训练集和测试集的AUC和C-index并生成ROC曲线图
+object_pn <- evaluate_roc_lasso_model(object_pn)
+###执行Kaplan-Meier生存分析验证
+###基于风险评分中位数划分高低风险组
+###计算HR及95%CI，生成生存曲线图
+object_pn <- evaluate_km_lasso_model(object_pn)
+###计算各变量的风险比(HR)及置信区间
+object_pn <- lasso_compute_hr_and_ci(object_pn)
+###生成森林图
+object_pn <- forest_plot_lasso_model(object_pn)
+``` 
 
 
-`extract_model_results`函数则基于指定指标`metric = "C_index"/"ROC_AUC"`选择最优模型
+**PLS回归预后模型**
+本模块提供用于训练偏最小二乘(PLS)生存分析模型的函数，专门针对右删失数据。实现包含交叉验证用于最优参数选择。
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型pls_model分析结果
 
 
+``` r
+###训练pls回归预后模型
+object_pn <- train_pls_model(object_pn,
+                           nfolds = 10,
+                           method = "efron",
+                           se = TRUE,
+                           scaleX = TRUE)
+
+###计算训练集和测试集的AUC和C-index并生成ROC曲线图
+object_pn <- evaluate_roc_pls_model(object_pn)
+
+###执行Kaplan-Meier生存分析验证
+###基于风险评分中位数划分高低风险组
+###计算HR及95%CI，生成生存曲线图
+object_pn <- evaluate_km_pls_model(object_pn)
+###计算各变量的风险比(HR)及置信区间
+object_pn <- pls_compute_hr_and_ci(object_pn)
+###生成森林图
+object_pn <- forest_plot_pls_model(object_pn)
+```
+
+
+**RSF回归预后模型**
+提供支持自动交叉验证的随机生存森林(RSF)预后建模功能，通过调节树数量(ntree)、节点大小(nodesize)和分割规则(splitrule)等参数优化模型，并支持训练过程监控和性能评估。
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型rsf_model分析结果
+``` r
+###训练rsf回归预后模型
+object_pn<-train_rsf_model(object_pn,
+                           nfolds = 10,
+                           ntree = 1000,
+                           nodesize = 10,
+                           splitrule = "logrank")
+###计算训练集和测试集的AUC和C-index并生成ROC曲线图
+object_pn <- evaluate_roc_rsf_model(object_pn)
+###执行Kaplan-Meier生存分析验证
+###基于风险评分中位数划分高低风险组
+###计算HR及95%CI，生成生存曲线图
+object_pn <- evaluate_km_rsf_model(object_pn)
+###计算各变量的风险比(HR)及置信区间
+object_pn <- rsf_compute_hr_and_ci(object_pn)
+###生成森林图
+object_pn <- forest_plot_rsf_model(object_pn)
+```
+
+**coxph回归预后模型**
+支持自动交叉验证的Cox比例风险模型训练功能，通过分层抽样评估模型性能(C-index指标)，支持数据预处理核函数和可视化分析
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型coxph_model分析结果
+``` r
+###训练coxph回归预后模型
+object_pn <- train_coxph_model(object_pn, nfolds = 10)
+###计算训练集和测试集的AUC和C-index并生成ROC曲线图
+object_pn <- evaluate_roc_coxph_model(object_pn)
+###执行Kaplan-Meier生存分析验证
+###基于风险评分中位数划分高低风险组
+###计算HR及95%CI，生成生存曲线图
+object_pn <- evaluate_km_coxph_model(object_pn)
+###计算各变量的风险比(HR)及置信区间
+object_pn <- coxph_compute_hr_and_ci(object_pn)
+###生成森林图
+object_pn <- forest_plot_coxph_model(object_pn)
+```
+
+**Coxboost回归预后模型**
+提供支持自动参数优化的CoxBoost生存分析模型训练功能，通过交叉验证确定最佳迭代步数(stepno)和惩罚参数(penalty)，支持并行计算和可视化输出
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`survival.model`槽位保存模型coxboost_model分析结果
+
+``` r
+###训练coxboost回归预后模型
+object_pn<-train_coxboost_model(object_pn,
+                                trace = TRUE,
+                                parallel = FALSE,
+                                stepno = 100,
+                                maxstepno = 500,
+                                K = 10,
+                                type = "verweij",
+                                penalty = NULL,
+                                multicore = 1)
+###计算训练集和测试集的AUC和C-index并生成ROC曲线图
+object_pn <- evaluate_roc_coxboost_model(object_pn)
+###执行Kaplan-Meier生存分析验证
+###基于风险评分中位数划分高低风险组
+###计算HR及95%CI，生成生存曲线图
+object_pn <- evaluate_km_coxboost_model(object_pn)
+###计算各变量的风险比(HR)及置信区间
+object_pn <- coxboost_compute_hr_and_ci(object_pn)
+###生成森林图
+object_pn <- forest_plot_coxboost_model(object_pn)
+```
+
+#### 4.9最佳模型提取与外部验证
+
+**最佳模型提取**
+
+`extract_model_results`函数则基于指定指标`metric = "C_index"/"ROC_AUC"`从训练好的生存分析模型提取最优模型
+如果输入是 `PrognosiX 对象`，函数会自动更新对象的`best.model`槽位保存最优模型结果
+
+``` r
+object_pn<-extract_model_results(object_pn,
+                                 metric = "C_index")
+#> object_pn@best.model[["best_model_results"]]
+#   Dataset   C_index   ROC_AUC       Model
+#9    Train 0.9770971 0.8532556 coxph_model
+#10    Test 0.9728736 0.8299667 coxph_model
+>
+```
+
+**外部验证**
+验证数据集整合（支持Stats对象或数据框两种输入格式）支持多种生存模型在独立验证集上的自动化测试(ROC曲线、KM生存分析）
+
+``` r
+###输入清洗后的 Stats 对象
+object_pn <- ExtractPrognosiXValidata(
+  object_stats = object_val,  # 清洗后的 Stats 对象
+  object_prognosix = object_pn,  # 目标 PrognosiX 对象
+  time_col = "time",  # 指定生存时间列名
+  status_col = "event"  # 指定事件状态列名
+)
+###输入清洗后的数据框
+object_pn <- ExtractPrognosiXValidata(
+  data = val_data,  # 清洗后的数据框
+  object_prognosix = object_pn,  # 目标 PrognosiX 对象
+  time_col = "time",  # 指定生存时间列名
+  status_col = "event"  # 指定事件状态列名
+)
+
+# 2. 验证模型性能
+object_pn <- evaluate_best_model_val(object_pn)
+```
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/ROC_curves-val.png" alt="Screenshot" width=500">
+</div>
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/coxph_time_distribution_val.png" alt="Screenshot" width=500">
+</div>
+
+
+#### 4.10 临床应用
+`PrognosiXClinicalPrediction` 函数用于对新临床样本进行风险预测和可视化
+
+
+``` r
+# 基本调用方式
+pred_results <- PrognosiXClinicalPrediction(
+  object = object_pn,      # 训练好的PrognosiX模型对象
+  new_data = val_data      # 新临床样本数据
+)
+```
+
+<div align="center">
+<img src="https://github.com/OchangjingluO/Icare/blob/master/fig/risk_group_prediction.png" alt="Screenshot" width=500">
+</div>
 
 
